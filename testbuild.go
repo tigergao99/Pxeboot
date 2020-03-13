@@ -134,10 +134,10 @@ func LoadConfiguration() Configuration {
  
 func main() {
 	configuration := LoadConfiguration()
-	print(configuration.Privkey)
 	connectSSH("root", "noblerock.zapto.org:10022", 
 		configuration.Giturl, configuration.Privkey, configuration.Jailname, commands1)
 	print("Waiting for charlie to boot up!\n")
 	time.Sleep(150 * time.Second)
+	// have another ssh session `ssh -p 10022 -L 20022:192.168.11.4:22 noblerock.zapto.org`
 	connectSSH("root", "localhost:20022", "", configuration.Privkey, "", commands2)
 }
