@@ -8,10 +8,6 @@ import (
 
 	"io/ioutil"
 	"encoding/json"
-
-	"golang.org/x/crypto/ssh"
-	// Uncomment to store output in variable
-	//"bytes"
 )
 
 type Configuration struct {
@@ -57,14 +53,9 @@ func connectSSH(username, hostname, port, giturl,
 		log.Fatal(err)
 	}
 	defer sess.Close()
- 
-	// Uncomment to store output in variable
-	//var b bytes.Buffer
-	//sess.Stdout = &amp;b
-	//sess.Stderr = &amp;b
+
  
 	// Enable system stdout
-	// Comment these if you uncomment to store in variable
 	sess.Stdout = os.Stdout
 	sess.Stderr = os.Stderr
  
@@ -78,11 +69,10 @@ func connectSSH(username, hostname, port, giturl,
 	// send the commands
 	if hostname == "192.168.11.101" {
 		commands = []string{
-			//perhaps try to delete jailname before starting? (Either that or user can do it)
-			//fmt.Sprintf("yes | poudriere jail -d -j %s", jailname),
-			//fmt.Sprintf("poudriere jail -c -j %s -m git -b -v master -U %s -K GENERIC", jailname, giturl),
-			//fmt.Sprintf("poudriere bulk -j %s -p default -f pkglist", jailname),
-			//fmt.Sprintf("poudriere image -j %s -f pkglist -t tar -p default", jailname),
+			fmt.Sprintf("yes | poudriere jail -d -j %s", jailname),
+			fmt.Sprintf("poudriere jail -c -j %s -m git -b -v master -U %s -K GENERIC", jailname, giturl),
+			fmt.Sprintf("poudriere bulk -j %s -p default -f pkglist", jailname),
+			fmt.Sprintf("poudriere image -j %s -f pkglist -t tar -p default", jailname),
 			"./script/check_charlie",
 			"cd /b/tftpboot/FreeBSD/install",
 			"chflags noschg lib/*",
@@ -128,8 +118,6 @@ func connectSSH(username, hostname, port, giturl,
 
 	// Wait for sess to finish
 	err = sess.Wait()
-	// Uncomment to store in variable
-	//fmt.Println(b.String())
 }
 
 func LoadConfiguration() Configuration {
@@ -145,7 +133,6 @@ func LoadConfiguration() Configuration {
 }
  
 func main() {
-	// Note: if jailname already exists, you have to either delete the old jail or have a new jailname.
 	configuration := LoadConfiguration()
 	connectSSH("root", "192.168.11.101", "22", 
 		configuration.Giturl, configuration.Privkey, configuration.Jailname)
