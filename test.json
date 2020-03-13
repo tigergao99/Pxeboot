@@ -1,0 +1,5 @@
+{
+    "Giturl": "https://github.com/tigergao99/freebsd-1",
+    "Privkey": "/home/tig/.ssh/id_rsa",
+    "Jailname": "newjail"
+}
