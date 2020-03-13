@@ -18,49 +18,8 @@ type Configuration struct {
 	Jailname  string
 }
 
-commands1 = []string{
-	fmt.Sprintf("yes | poudriere jail -d -j %s", jailname),
-	fmt.Sprintf("poudriere jail -c -j %s -m git -b -v master -U %s -K GENERIC", jailname, giturl),
-	fmt.Sprintf("poudriere bulk -j %s -p default -f pkglist", jailname),
-	fmt.Sprintf("poudriere image -j %s -f pkglist -t tar -p default", jailname),
-	"./script/check_charlie",
-	"cd /b/tftpboot/FreeBSD/install",
-	"chflags noschg lib/*",
-	"rm -rf lib",
-	"chflags noschg usr/lib32/*",
-	"rm -rf usr/lib32",
-	"chflags noschg libexec/*",
-	"rm -rf libexec",
-	"chflags noschg usr/bin/*",
-	"rm -rf bin",
-	"chflags noschg sbin/*",
-	"rm -rf sbin",
-	"chflags noschg var/*",
-	"rm -rf var",
-	"chflags noschg usr/lib/*",
-	"rm -rf usr/lib",
-	"rm -rf *",
-	"rm -rf .*",
-	"cp /data/images/poudriereimage.txz /b/tftpboot/FreeBSD/install",
-	"tar -xf /data/images/poudriereimage.txz -C /b/tftpboot/FreeBSD/install",
-	"mkdir -p /b/tftpboot/FreeBSD/install/conf/",
-	"{ mkdir -p conf/base; tar -c -v -f conf/base/etc.cpio.gz --format cpio --gzip etc; tar -c -v -f conf/base/var.cpio.gz --format cpio --gzip var; } | chroot .",
-	"cp -r ~/conf/default /b/tftpboot/FreeBSD/install/conf/",
-	"mkdir /b/tftpboot/FreeBSD/install/root/.ssh",
-	"cp ~/.ssh/id_rsa.pub /b/tftpboot/FreeBSD/install/root/.ssh/authorized_keys",
-	"{ echo 1; echo \"on 6\"; sleep 1; } | telnet 192.168.11.99",
-	"exit",
-}
-
-commands2 = []string{
-	"pwd_mkdb -p /etc/master.passwd",
-	"cd /usr/tests",
-	"kyua test",
-	"exit",
-}
-
-func connectSSH(username, hostname, giturl,
-	keypath, jailname string, commands []string) {
+func connectSSH(username, hostname,
+	keypath string, commands []string) {
 	// SSH client config
 	key, err := ioutil.ReadFile(keypath)
 	signer, err := ssh.ParsePrivateKey(key)
@@ -134,10 +93,50 @@ func LoadConfiguration() Configuration {
  
 func main() {
 	configuration := LoadConfiguration()
-	connectSSH("root", "noblerock.zapto.org:10022", 
-		configuration.Giturl, configuration.Privkey, configuration.Jailname, commands1)
+	var commands1 = []string{
+		fmt.Sprintf("yes | poudriere jail -d -j %s", configuration.Jailname),
+		fmt.Sprintf("poudriere jail -c -j %s -m git -b -v master -U %s -K GENERIC", configuration.Jailname, configuration.Giturl),
+		fmt.Sprintf("poudriere bulk -j %s -p default -f pkglist", configuration.Jailname),
+		fmt.Sprintf("poudriere image -j %s -f pkglist -t tar -p default", configuration.Jailname),
+		"./script/check_charlie",
+		"cd /b/tftpboot/FreeBSD/install",
+		"chflags noschg lib/*",
+		"rm -rf lib",
+		"chflags noschg usr/lib32/*",
+		"rm -rf usr/lib32",
+		"chflags noschg libexec/*",
+		"rm -rf libexec",
+		"chflags noschg usr/bin/*",
+		"rm -rf bin",
+		"chflags noschg sbin/*",
+		"rm -rf sbin",
+		"chflags noschg var/*",
+		"rm -rf var",
+		"chflags noschg usr/lib/*",
+		"rm -rf usr/lib",
+		"rm -rf *",
+		"rm -rf .*",
+		"cp /data/images/poudriereimage.txz /b/tftpboot/FreeBSD/install",
+		"tar -xf /data/images/poudriereimage.txz -C /b/tftpboot/FreeBSD/install",
+		"mkdir -p /b/tftpboot/FreeBSD/install/conf/",
+		"{ mkdir -p conf/base; tar -c -v -f conf/base/etc.cpio.gz --format cpio --gzip etc; tar -c -v -f conf/base/var.cpio.gz --format cpio --gzip var; } | chroot .",
+		"cp -r ~/conf/default /b/tftpboot/FreeBSD/install/conf/",
+		"mkdir /b/tftpboot/FreeBSD/install/root/.ssh",
+		"cp ~/.ssh/id_rsa.pub /b/tftpboot/FreeBSD/install/root/.ssh/authorized_keys",
+		"{ echo 1; echo \"on 6\"; sleep 1; } | telnet 192.168.11.99",
+		"exit",
+	}
+	
+	var commands2 = []string{
+		"pwd_mkdb -p /etc/master.passwd",
+		"cd /usr/tests",
+		"kyua test",
+		"exit",
+	}
+
+	connectSSH("root", "noblerock.zapto.org:10022", configuration.Privkey, commands1)
 	print("Waiting for charlie to boot up!\n")
 	time.Sleep(150 * time.Second)
 	// have another ssh session `ssh -p 10022 -L 20022:192.168.11.4:22 noblerock.zapto.org`
-	connectSSH("root", "localhost:20022", "", configuration.Privkey, "", commands2)
+	connectSSH("root", "localhost:20022", configuration.Privkey, commands2)
 }
