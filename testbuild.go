@@ -8,6 +8,8 @@ import (
 
 	"io/ioutil"
 	"encoding/json"
+
+	"golang.org/x/crypto/ssh"
 )
 
 type Configuration struct {
